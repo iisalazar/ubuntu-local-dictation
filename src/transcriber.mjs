@@ -24,6 +24,8 @@ export async function transcribeLocal(float32Array, config) {
   const result = await transcriber(float32Array, {
     language: config.language || 'en',
     task: 'transcribe',
+    chunk_length_s: 30,
+    stride_length_s: 5,
   });
 
   return result.text;

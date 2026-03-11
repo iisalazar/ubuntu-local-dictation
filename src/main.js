@@ -10,6 +10,8 @@ let tray = null;
 let win = null;
 let recording = false;
 let processing = false;
+let recordingTimer = null;
+const MAX_RECORDING_MS = 3 * 60 * 1000; // 3 minutes
 
 function createTrayIcon(color) {
   const size = 22;
@@ -68,6 +70,8 @@ function updateContextMenu() {
 function toggleRecording() {
   if (processing) return;
   if (recording) {
+    clearTimeout(recordingTimer);
+    recordingTimer = null;
     recording = false;
     processing = true;
     updateTray();
@@ -78,20 +82,31 @@ function toggleRecording() {
     updateTray();
     console.log('Recording started...');
     win.webContents.send('start-recording');
+    // Auto-stop after max duration
+    recordingTimer = setTimeout(() => {
+      if (recording) {
+        console.log('Max recording duration reached, auto-stopping...');
+        toggleRecording();
+      }
+    }, MAX_RECORDING_MS);
   }
 }
 
-// Renderer sends decoded PCM float32 audio
-ipcMain.on('audio-pcm', async (_event, pcmArray) => {
-  console.log(`Received ${pcmArray.length} samples (${(pcmArray.length / 16000).toFixed(1)}s)`);
+// Renderer sends PCM file path to avoid large IPC serialization
+ipcMain.on('audio-pcm-file', async (_event, filePath, sampleCount) => {
+  console.log(`Received ${sampleCount} samples (${(sampleCount / 16000).toFixed(1)}s) from ${filePath}`);
 
   try {
+    const pcmBuffer = fs.readFileSync(filePath);
+    const float32 = new Float32Array(pcmBuffer.buffer, pcmBuffer.byteOffset, sampleCount);
+    // Clean up temp file
+    fs.unlink(filePath, () => {});
+
     let text;
     if (config.mode === 'cloud') {
-      text = await transcribeCloud(pcmArray);
+      text = await transcribeCloud(float32);
     } else {
       const { transcribeLocal } = await import('./transcriber.mjs');
-      const float32 = new Float32Array(pcmArray);
       text = await transcribeLocal(float32, config);
     }
 
@@ -118,13 +133,12 @@ ipcMain.on('transcription-error', (_event, err) => {
   updateTray();
 });
 
-async function transcribeCloud(pcmArray) {
+async function transcribeCloud(float32) {
   const OpenAI = require('openai');
   const apiKey = config.cloud.apiKey || process.env.OPENAI_API_KEY;
   const client = new OpenAI({ apiKey });
 
   // Convert float32 PCM to 16-bit WAV
-  const float32 = new Float32Array(pcmArray);
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {
     int16[i] = Math.max(-32768, Math.min(32767, Math.round(float32[i] * 32767)));
@@ -198,7 +212,12 @@ function createWindow() {
       contextIsolation: false,
     }
   });
-  win.loadFile(path.join(__dirname, 'renderer.html'));
+  const isDev = process.argv.includes('--dev');
+  if (isDev) {
+    win.loadURL('http://localhost:5173/');
+  } else {
+    win.loadFile(path.join(__dirname, '..', 'dist-renderer', 'index.html'));
+  }
   win.on('close', (e) => {
     e.preventDefault();
     win.hide();
