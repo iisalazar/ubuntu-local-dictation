@@ -4,8 +4,7 @@ A local-first dictation app for Linux, macOS, and Windows. Press a global hotkey
 
 Built with Electron + React.
 
-<!-- TODO: Add a screenshot or GIF demo here -->
-<!-- ![Screenshot](docs/screenshot.png) -->
+<video src="demos/demo1.webm" controls width="600"></video>
 
 ## Features
 
