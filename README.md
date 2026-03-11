@@ -26,7 +26,7 @@ Download the latest build for your platform from the [Releases](../../releases) 
 ### From source
 
 ```bash
-git clone https://github.com/<your-username>/local-dictation.git
+git clone https://github.com/iisalazar/local-dictation.git
 cd local-dictation
 npm install
 npm start

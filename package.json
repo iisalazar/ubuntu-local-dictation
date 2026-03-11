@@ -4,6 +4,7 @@
   "description": "Local-first dictation app — transcribe speech on-device with Whisper",
   "license": "MIT",
   "main": "src/main.js",
+  "repository": "https://github.com/iisalazar/ubuntu-local-dictation",
   "scripts": {
     "start": "npm run build:renderer && electron --no-sandbox .",
     "dev": "concurrently \"vite --host\" \"sleep 2 && electron --no-sandbox . --dev\"",
