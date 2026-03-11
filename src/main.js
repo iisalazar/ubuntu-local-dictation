@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, clipboard, nativeImage } = require('electron');
+app.commandLine.appendSwitch('no-sandbox');
 const path = require('path');
 const fs = require('fs');
 
@@ -25,17 +26,26 @@ const ICON_IDLE = createTrayIcon('#666666');
 const ICON_RECORDING = createTrayIcon('#cc3333');
 const ICON_PROCESSING = createTrayIcon('#cc9933');
 
+function sendStatus(status) {
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('status-change', status);
+  }
+}
+
 function updateTray() {
   if (!tray) return;
   if (processing) {
     tray.setImage(ICON_PROCESSING);
     tray.setToolTip('Dictation: transcribing...');
+    sendStatus('transcribing');
   } else if (recording) {
     tray.setImage(ICON_RECORDING);
     tray.setToolTip('Dictation: recording...');
+    sendStatus('recording');
   } else {
     tray.setImage(ICON_IDLE);
     tray.setToolTip('Dictation: ready');
+    sendStatus('ready');
   }
   updateContextMenu();
 }
@@ -43,6 +53,7 @@ function updateTray() {
 function updateContextMenu() {
   if (!tray) return;
   const menu = Menu.buildFromTemplate([
+    { label: 'Show Window', click: () => { win.show(); win.focus(); } },
     { label: `Mode: ${config.mode}`, click: () => {
       config.mode = config.mode === 'local' ? 'cloud' : 'local';
       console.log(`Switched to ${config.mode} mode`);
@@ -86,12 +97,14 @@ ipcMain.on('audio-pcm', async (_event, pcmArray) => {
 
     if (text && text.trim()) {
       console.log(`Transcribed: ${text}`);
+      win.webContents.send('transcription-text', text.trim());
       typeText(text.trim());
     } else {
       console.log('No speech detected.');
     }
   } catch (err) {
     console.error('Transcription error:', err);
+    win.webContents.send('transcription-error', err.message || String(err));
   } finally {
     processing = false;
     updateTray();
@@ -100,6 +113,7 @@ ipcMain.on('audio-pcm', async (_event, pcmArray) => {
 
 ipcMain.on('transcription-error', (_event, err) => {
   console.error('Transcription error:', err);
+  win.webContents.send('transcription-error', err);
   processing = false;
   updateTray();
 });
@@ -173,7 +187,12 @@ function typeText(text) {
 
 function createWindow() {
   win = new BrowserWindow({
-    show: false,
+    show: true,
+    width: 420,
+    height: 600,
+    minWidth: 320,
+    minHeight: 400,
+    title: 'Local Dictation',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -192,6 +211,11 @@ app.whenReady().then(() => {
   tray = new Tray(ICON_IDLE);
   tray.setToolTip('Dictation: ready');
   updateContextMenu();
+
+  tray.on('click', () => {
+    win.show();
+    win.focus();
+  });
 
   // Register global shortcut
   const hotkey = config.hotkey || 'Super+Shift+D';

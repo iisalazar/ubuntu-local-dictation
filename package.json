@@ -5,13 +5,39 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron --no-sandbox .",
-    "dev": "electron --no-sandbox . --dev"
+    "dev": "electron --no-sandbox . --dev",
+    "build": "electron-builder",
+    "build:linux": "electron-builder --linux",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.local-dictation.app",
+    "productName": "Local Dictation",
+    "files": [
+      "src/**/*",
+      "config.json",
+      "node_modules/**/*"
+    ],
+    "linux": {
+      "target": ["AppImage", "deb"]
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "directories": {
+      "output": "dist"
+    }
   },
   "dependencies": {
     "@huggingface/transformers": "^3.4.0",
     "openai": "^4.80.0"
   },
   "devDependencies": {
-    "electron": "^35.0.0"
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8"
   }
 }
