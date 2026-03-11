@@ -1,5 +1,18 @@
 node_modules/
 dist/
 out/
-.env
 dist-renderer/
+
+# Environment & secrets
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+.idea/
+.vscode/

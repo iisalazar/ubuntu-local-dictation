@@ -4,7 +4,7 @@ const STATUS_LABELS = {
   transcribing: 'Transcribing...',
 };
 
-function formatTime(secs) {
+export function formatTime(secs) {
   const m = Math.floor(secs / 60);
   const s = secs % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
