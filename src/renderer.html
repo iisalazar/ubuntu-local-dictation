@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dictation</title></head>
+<body>
+<script>
+const { ipcRenderer } = require('electron');
+
+let mediaRecorder = null;
+let audioChunks = [];
+
+// ── Recording ────────────────────────────────────────────────────────
+
+ipcRenderer.on('start-recording', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        sampleRate: 16000,
+        channelCount: 1,
+        echoCancellation: false,
+        noiseSuppression: false,
+      }
+    });
+
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
+
+      // Decode to 16kHz float32 PCM for Whisper
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioContext = new AudioContext({ sampleRate: 16000 });
+      try {
+        const audioData = await audioContext.decodeAudioData(arrayBuffer);
+        const float32 = audioData.getChannelData(0);
+        // Send as regular array (IPC can't handle Float32Array directly)
+        ipcRenderer.send('audio-pcm', Array.from(float32));
+      } catch (err) {
+        console.error('Audio decode error:', err);
+        ipcRenderer.send('transcription-error', 'Failed to decode audio: ' + err.message);
+      } finally {
+        audioContext.close();
+      }
+    };
+
+    mediaRecorder.start(100);
+    console.log('Recording started');
+  } catch (err) {
+    console.error('Mic access error:', err);
+    ipcRenderer.send('transcription-error', 'Mic error: ' + err.message);
+  }
+});
+
+ipcRenderer.on('stop-recording', () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    console.log('Recording stopped');
+  }
+});
+</script>
+</body>
+</html>

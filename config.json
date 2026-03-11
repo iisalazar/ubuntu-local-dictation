@@ -1,0 +1,15 @@
+{
+  "mode": "local",
+  "language": "en",
+  "hotkey": "Ctrl+Shift+D",
+  "local": {
+    "model": "Xenova/whisper-base",
+    "quantized": true
+  },
+  "cloud": {
+    "apiKey": ""
+  },
+  "output": {
+    "method": "clipboard"
+  }
+}

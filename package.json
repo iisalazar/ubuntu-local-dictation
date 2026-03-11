@@ -1,0 +1,17 @@
+{
+  "name": "local-dictation",
+  "version": "1.0.0",
+  "description": "Local-first dictation app",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron --no-sandbox .",
+    "dev": "electron --no-sandbox . --dev"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.4.0",
+    "openai": "^4.80.0"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0"
+  }
+}
