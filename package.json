@@ -1,6 +1,8 @@
 {
   "name": "local-dictation",
-  "email": "iansalazar67@gmail.com",
+  "author": {
+  	"email": "iansalazar67@gmail.com"
+  },
   "version": "1.0.0",
   "description": "Local-first dictation app — transcribe speech on-device with Whisper",
   "license": "MIT",
