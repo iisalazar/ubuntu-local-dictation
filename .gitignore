@@ -16,3 +16,6 @@ Thumbs.db
 *.swo
 .idea/
 .vscode/
+
+
+config.json
