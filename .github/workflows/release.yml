@@ -46,9 +46,17 @@ jobs:
 
       - run: npm ci
 
-      - run: ${{ matrix.build_cmd }}
+      - name: Build (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: ${{ matrix.build_cmd }}
         env:
-          GH_TOKEN: ${{ matrix.os != 'windows-latest' && secrets.GITHUB_TOKEN || '' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          npm run build:renderer
+          npx electron-builder --win --publish never
 
       - uses: actions/upload-artifact@v4
         with:
