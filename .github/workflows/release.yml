@@ -20,7 +20,7 @@ jobs:
           - os: macos-latest
             build_cmd: npm run build:mac
           - os: windows-latest
-            build_cmd: npm run build:win
+            build_cmd: npm run build:renderer && electron-builder --win --publish never
 
     runs-on: ${{ matrix.os }}
 
@@ -31,6 +31,17 @@ jobs:
         with:
           node-version: 20
           cache: npm
+
+      - name: Cache Electron binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/AppData/Local/electron/Cache
+            ~/AppData/Local/electron-builder/Cache
+          key: electron-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: electron-${{ runner.os }}-
 
       - run: npm ci
 
