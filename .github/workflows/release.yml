@@ -21,7 +21,7 @@ jobs:
           - os: macos-latest
             build_cmd: npm run build:mac
           - os: windows-latest
-            build_cmd: npm run build:renderer && electron-builder --win --publish never
+            build_cmd: npm run build:renderer && npx electron-builder --win --publish never
 
     runs-on: ${{ matrix.os }}
 
