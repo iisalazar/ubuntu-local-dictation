@@ -1,6 +1,7 @@
 {
   "name": "local-dictation",
   "author": {
+    "name": "iisalazar",
   	"email": "iansalazar67@gmail.com"
   },
   "version": "1.0.0",
@@ -33,13 +34,16 @@
       "target": [
         "AppImage",
         "deb"
-      ]
+      ],
+      "icon": "build/icon.png"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "build/icon.icns"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "build/icon.ico"
     },
     "directories": {
       "output": "dist"
