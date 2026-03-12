@@ -21,7 +21,7 @@ jobs:
           - os: macos-latest
             build_cmd: npm run build:mac
           - os: windows-latest
-            build_cmd: npm run build:renderer && npx electron-builder --win --publish never
+            build_cmd: npm run build:win
 
     runs-on: ${{ matrix.os }}
 
@@ -48,7 +48,7 @@ jobs:
 
       - run: ${{ matrix.build_cmd }}
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ matrix.os != 'windows-latest' && secrets.GITHUB_TOKEN || '' }}
 
       - uses: actions/upload-artifact@v4
         with:
