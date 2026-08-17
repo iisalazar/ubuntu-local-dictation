@@ -2,21 +2,21 @@
   "name": "local-dictation",
   "author": {
     "name": "iisalazar",
-  	"email": "iansalazar67@gmail.com"
+    "email": "iansalazar67@gmail.com"
   },
   "version": "1.0.0",
-  "description": "Local-first dictation app — transcribe speech on-device with Whisper",
+  "description": "Local-first dictation app \u2014 transcribe speech on-device with Whisper",
   "license": "MIT",
   "main": "src/main.js",
   "repository": "https://github.com/iisalazar/ubuntu-local-dictation",
   "scripts": {
-    "start": "npm run build:renderer && electron --no-sandbox .",
-    "dev": "concurrently \"vite --host\" \"node -e \\\"setTimeout(()=>{},2000)\\\" && electron --no-sandbox . --dev\"",
-    "build:renderer": "vite build",
-    "build": "npm run build:renderer && electron-builder",
-    "build:linux": "npm run build:renderer && electron-builder --linux",
-    "build:mac": "npm run build:renderer && electron-builder --mac",
-    "build:win": "npm run build:renderer && electron-builder --win",
+    "start": "node api.js && npm run build:renderer && electron --no-sandbox .",
+    "dev": "node api.js && concurrently \"vite --host\" \"node -e \\\"setTimeout(()=>{},2000)\\\" && electron --no-sandbox . --dev\"",
+    "build:renderer": "node api.js && vite build",
+    "build": "node api.js && npm run build:renderer && electron-builder",
+    "build:linux": "node api.js && npm run build:renderer && electron-builder --linux",
+    "build:mac": "node api.js && npm run build:renderer && electron-builder --mac",
+    "build:win": "node api.js && npm run build:renderer && electron-builder --win",
     "test": "vitest",
     "test:run": "vitest run"
   },
