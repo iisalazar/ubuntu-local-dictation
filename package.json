@@ -11,7 +11,7 @@
   "repository": "https://github.com/iisalazar/ubuntu-local-dictation",
   "scripts": {
     "start": "npm run build:renderer && electron --no-sandbox .",
-    "dev": "concurrently \"vite --host\" \"sleep 2 && electron --no-sandbox . --dev\"",
+    "dev": "concurrently \"vite --host\" \"node -e \\\"setTimeout(()=>{},2000)\\\" && electron --no-sandbox . --dev\"",
     "build:renderer": "vite build",
     "build": "npm run build:renderer && electron-builder",
     "build:linux": "npm run build:renderer && electron-builder --linux",

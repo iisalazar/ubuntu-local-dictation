@@ -1,6 +1,6 @@
 # Local Dictation
 
-Electron-based local-first dictation app. Press a hotkey to record speech, transcribes via local Whisper (HuggingFace transformers.js) or OpenAI cloud API, and pastes the result.
+Electron-based local-first dictation app. Press a hotkey to record speech, transcribes via local Whisper (HuggingFace transformers.js) or a cloud API (OpenAI or Azure AI Foundry), and pastes the result.
 
 ## Architecture
 
@@ -15,7 +15,8 @@ Electron-based local-first dictation app. Press a hotkey to record speech, trans
   - `lib/ipc.js` — wrapper around `window.require('electron')` for ipcRenderer/clipboard
   - `styles/index.css` — dark theme styles
 - `src/transcriber.mjs` — ESM module for local Whisper transcription using `@huggingface/transformers`
-- `config.json` — User config: hotkey, mode (local/cloud), model, language
+- `src/cloudTranscriber.mjs` — ESM module for cloud transcription, branches on `config.cloud.provider` between OpenAI (`whisper-1`) and Azure AI Foundry (`AzureOpenAI` client) via the `openai` SDK
+- `config.json` — User config: hotkey, mode (local/cloud), model, language, cloud provider settings
 - `vite.config.js` — Vite config for building the renderer
 - `.github/workflows/release.yml` — GitHub Actions CI/CD for cross-platform releases
 
@@ -23,7 +24,7 @@ Electron-based local-first dictation app. Press a hotkey to record speech, trans
 
 - Renderer handles both audio capture and UI display. All transcription runs in main process.
 - React renderer uses `window.require('electron')` to access ipcRenderer (nodeIntegration: true, no contextIsolation).
-- Local transcription uses dynamic `import()` of the .mjs file since `@huggingface/transformers` is ESM-only.
+- Local and cloud transcription both use dynamic `import()` of their `.mjs` files (`transcriber.mjs`, `cloudTranscriber.mjs`) from the CJS main process.
 - PCM data sent over IPC as plain Array (Float32Array doesn't serialize).
 - Paste simulation: clipboard write + xdotool/ydotool (Linux), osascript (macOS), SendKeys (Windows). Falls back to notification if unavailable.
 - Window hides on close, restores via tray click or "Show Window" menu item.
@@ -58,4 +59,6 @@ Creates a draft release with Linux, macOS, and Windows builds.
 
 ## Config
 
-Edit `config.json`. Set `OPENAI_API_KEY` env var or `cloud.apiKey` for cloud mode.
+Edit `config.json`. For cloud mode, set `cloud.provider` to `"openai"` (default) or `"azure-foundry"`:
+- `openai`: set `OPENAI_API_KEY` env var or `cloud.apiKey`. Uses `whisper-1`.
+- `azure-foundry`: set `AZURE_FOUNDRY_API_KEY` env var or `cloud.apiKey`, plus `cloud.azure.endpoint` and `cloud.azure.deployment` (the Whisper model deployment name in your Azure AI Foundry project). `cloud.azure.apiVersion` defaults to `2024-06-01`.

@@ -2,7 +2,7 @@ const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, clipboard, nati
 app.commandLine.appendSwitch('no-sandbox');
 const path = require('path');
 const fs = require('fs');
-const { buildWavBuffer, formatTrayIconSvg } = require('./utils');
+const { formatTrayIconSvg } = require('./utils');
 
 const CONFIG_PATH = path.join(__dirname, '..', 'config.json');
 
@@ -99,7 +99,8 @@ ipcMain.on('audio-pcm-file', async (_event, filePath, sampleCount) => {
 
     let text;
     if (config.mode === 'cloud') {
-      text = await transcribeCloud(float32);
+      const { transcribeCloud } = await import('./cloudTranscriber.mjs');
+      text = await transcribeCloud(float32, config);
     } else {
       const { transcribeLocal } = await import('./transcriber.mjs');
       text = await transcribeLocal(float32, config);
@@ -127,21 +128,6 @@ ipcMain.on('transcription-error', (_event, err) => {
   processing = false;
   updateTray();
 });
-
-async function transcribeCloud(float32) {
-  const OpenAI = require('openai');
-  const apiKey = config.cloud.apiKey || process.env.OPENAI_API_KEY;
-  const client = new OpenAI({ apiKey });
-
-  const wavBuffer = buildWavBuffer(float32);
-  const file = new File([wavBuffer], 'audio.wav', { type: 'audio/wav' });
-
-  const result = await client.audio.transcriptions.create({
-    model: 'whisper-1',
-    file,
-  });
-  return result.text;
-}
 
 function typeText(text) {
   clipboard.writeText(text);
