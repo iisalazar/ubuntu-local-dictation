@@ -13,7 +13,6 @@ Thumbs.db
 *.swp
 *.swo
 .idea/
-.vscode/
 
 
 config.json
